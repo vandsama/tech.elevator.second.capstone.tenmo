@@ -17,7 +17,7 @@ import java.util.List;
 public class JdbcUserDao implements UserDao {
 
     private JdbcTemplate jdbcTemplate;
-    private JdbcAccountDao;
+    private JdbcAccountDao jdbcAccountDao;
 
     public JdbcUserDao(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -70,10 +70,10 @@ public class JdbcUserDao implements UserDao {
         }
 
         // TODO: Create the account record with initial balance
-        String sql2 = "INSERT INTO account (user_id, balance)" +
-                "VALUES ((SELECT user_id FROM tenmo_user WHERE username = ?), 1000);";
-        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, username);
         JdbcAccountDao jdbcAccountDao = new JdbcAccountDao(jdbcTemplate);
+        String sql2 = "INSERT INTO account (user_id, balance)" +
+                "VALUES ((SELECT user_id FROM tenmo_user WHERE username = ?), 1000) RETURNING account_id;";
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql2, username);
         jdbcAccountDao.mapRowToAccount(result);
         return true;
     }

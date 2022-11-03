@@ -14,7 +14,7 @@ public class Account {
 
     private Long accountId;
     private Long userId;
-    private BigDecimal balance;
+    private BigDecimal balance = new BigDecimal(0.00);
 
     public Account()
     {
@@ -50,6 +50,16 @@ public class Account {
 
     public void setBalance(BigDecimal balance) {
         this.balance = balance;
+    }
+
+    public void deposit(BigDecimal amount)
+    {
+        this.setBalance(balance.add(amount));
+    }
+
+    public void withdraw(BigDecimal amount)
+    {
+        this.setBalance(balance.subtract(amount));
     }
 
     @Override

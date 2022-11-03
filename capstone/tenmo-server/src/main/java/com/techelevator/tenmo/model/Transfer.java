@@ -4,14 +4,16 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
+import java.math.BigDecimal;
 import java.security.cert.LDAPCertStoreParameters;
 
 public class Transfer {
+    private Account account;
 
-    // long transferId (generated here)
-    // long fromAccountId (pull from Account class because that's where we store the account numbers)
-    // long toAccountId
-    // BigDecimal transferAmount
+    private long transferId;
+    private long fromAccountId; // (pull from Account class because that's where we store the account numbers)
+    private long toAccountId;
+    private BigDecimal transferAmount = new BigDecimal(0.00);
 
     // generate transactionDetails (object[?]) and move to log (create log) -- refer to Capstone 1 Vending Machine log
     // Transaction Details will be pulled from transaction log when user requests Account History (create class [?])

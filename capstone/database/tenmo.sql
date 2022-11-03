@@ -46,7 +46,7 @@ CREATE TABLE transfer (
 	to_account_id int NOT NULL,
 	transfer_amount decimal(13,2) NOT NULL,
 	CONSTRAINT PK_transfer PRIMARY KEY (transfer_id),
-	CONSTRAINT FK_transfer_account_from FOREIGN KEY (from_account_id) REFERENCES account (account_id)
+	CONSTRAINT FK_transfer_account_from FOREIGN KEY (from_account_id) REFERENCES account (account_id),
 	CONSTRAINT FK_transfer_account_to FOREIGN KEY (to_account_id) REFERENCES account (account_id)
 );
 
