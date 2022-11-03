@@ -24,4 +24,10 @@ public class RegisterUserDTO {
     public void setPassword(String password) {
         this.password = password;
     }
+
+
+    // create account_id (long) upon registration -- use insert statement in PGAdmin
+    // set account balance to $1K (BigDecimal in IntelliJ)
+    // set user_id in account to be *equal* to user_id in tenmo_user (using subquery)
+
 }
