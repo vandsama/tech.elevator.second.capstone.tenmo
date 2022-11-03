@@ -22,6 +22,7 @@ public class AccountController {
 
     }
 
+    // GET balance by id
     @PreAuthorize("isActivated()")
     @RequestMapping(path = "/accounts/{id}/balance", method = RequestMethod.GET)
     public BigDecimal viewBalanceById(@PathVariable long id)

@@ -34,35 +34,6 @@ public class JdbcAccountDao implements AccountDao{
         return this.mapRowToAccount(results).getBalance();
     }
 
-    @Override
-    public void sendTransfer(Account fromAccount) {
-
-    }
-
-    @Override
-    public List<User> selectFromUserList() {
-        List<User> users = new ArrayList<>();
-        String sql = "SELECT";
-
-        return users;
-    }
-
-    @Override
-    public BigDecimal selectAmount(Account toAccount) {
-        return null;
-    }
-
-    @Override
-    public void reviewTransfer(Account fromAccount, Account toAccount, BigDecimal amount) {
-
-    }
-
-    @Override
-    public void executeTransfer(Account fromAccount, Account toAccount, BigDecimal amount) {
-
-    }
-
-
     public Account mapRowToAccount(SqlRowSet rs) {
         Account account = new Account();
         account.setAccountId(rs.getLong("account_id"));
