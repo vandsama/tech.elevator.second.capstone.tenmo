@@ -25,11 +25,20 @@ public class JdbcAccountDao implements AccountDao{
 //
 //    }
 
-    public BigDecimal viewBalanceById(long id)
+    public BigDecimal viewAccountInfoByUserId(long id)
     {
-        String sql = "SELECT balance FROM account" +
+        String sql = "SELECT account_id, user_id, balance  FROM account" +
                 "JOIN tenmo_user ON tenmo_user.user_id = account.user_id" +
                 "WHERE tenmo_user.user_id = ?;";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, id);
+        return this.mapRowToAccount(results).getBalance();
+    }
+
+    public BigDecimal viewBalanceByUserId(long id)
+    {
+        String sql = "SELECT balance FROM account " +
+//                "JOIN tenmo_user ON tenmo_user.user_id = account.user_id " +
+                "WHERE user_id = ?;";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, id);
         return this.mapRowToAccount(results).getBalance();
     }

@@ -47,6 +47,9 @@ public class Account {
     public BigDecimal getBalance() {
         return balance;
     }
+    public BigDecimal getBalance(long accountId) {
+        return balance;
+    }
 
     public void setBalance(BigDecimal balance) {
         this.balance = balance;

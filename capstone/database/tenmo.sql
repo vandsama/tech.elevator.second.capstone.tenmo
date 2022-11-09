@@ -45,9 +45,20 @@ CREATE TABLE transfer (
 	from_account_id int NOT NULL,
 	to_account_id int NOT NULL,
 	transfer_amount decimal(13,2) NOT NULL,
+	is_Approved boolean NOT NULL DEFAULT true,
 	CONSTRAINT PK_transfer PRIMARY KEY (transfer_id),
 	CONSTRAINT FK_transfer_account_from FOREIGN KEY (from_account_id) REFERENCES account (account_id),
 	CONSTRAINT FK_transfer_account_to FOREIGN KEY (to_account_id) REFERENCES account (account_id)
 );
 
 COMMIT;
+
+-- SELECT * FROM account;
+-- INSERT INTO tenmo_user (username, password_hash) VALUES ('sky', 'adwhkdwhjkdhajdahk') RETURNING user_id;
+
+-- INSERT INTO account (user_id, balance) 
+-- VALUES ((SELECT user_id FROM tenmo_user WHERE username = 'sky'), 1000) RETURNING account_id;
+
+-- SELECT balance FROM account
+-- JOIN tenmo_user ON tenmo_user.user_id = account.user_id
+--WHERE tenmo_user.user_id = ?;

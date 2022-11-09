@@ -22,16 +22,16 @@ public interface TransferDao {
     //User should NOT be able to send a zero or negative amount.
     //User should NOT be able to send more money than is in their account.
 
-    public void reviewTransfer(Account fromAccount, Account toAccount, BigDecimal amount);
+    public boolean reviewTransfer(long fromAccountId, long toAccountId, BigDecimal amount);
     //takes the info from sendTransfer(), selectFromUserList(), and selectAmount() and displays all the information
     //prompts the user with a message saying "Please verify your transaction details." and the ability to say Submit or Cancel.
 
-    public void executeTransfer(Account fromAccount, Account toAccount, BigDecimal amount);
+    public boolean executeTransfer(long fromAccountId, long toAccountId, BigDecimal amount);
 
 
-    List<Transfer> viewTransfersById(long accountId, long transferId);
+    List<Transfer> viewTransferByTransferId(long transferId);
 
-    List<Transfer> viewTransfers(long accountId);
+    List<Transfer> viewAllTransfersByUserId(long accountId);
     //Completes the transfer by withdrawing the amount from the fromAccount, depositing the same amount into the toAccount.
     //
     //When it successfully sends the money, it logs the transaction in the transfer database table, logging the fromAccount, toAccount, and amount sent.

@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 
-@PreAuthorize("isActivated()")
+//@PreAuthorize("isActivated()")
 @RestController
-@RequestMapping("/accounts")
+@RequestMapping("/accounts/")
 public class AccountController {
 
     private AccountDao accountDao;
@@ -22,12 +22,23 @@ public class AccountController {
 
     }
 
-    // GET balance by id
+    // GET balance by AccountId
     @PreAuthorize("isActivated()")
-    @RequestMapping(path = "/accounts/{id}/balance", method = RequestMethod.GET)
-    public BigDecimal viewBalanceById(@PathVariable long id)
+    @RequestMapping(path = "{id}", method = RequestMethod.GET)
+    public BigDecimal viewAccountInfoByAccountId(@PathVariable long id)
     {
-        return accountDao.viewBalanceById(id);
+        return accountDao.viewAccountInfoByUserId(id);
+    }
+
+
+
+
+    // GET balance by AccountId
+//    @PreAuthorize("isActivated()")
+    @RequestMapping(path = "{id}/balance", method = RequestMethod.GET)
+    public BigDecimal viewBalanceByUserId(@PathVariable long id)
+    {
+        return accountDao.viewBalanceByUserId(id);
     }
 
 
