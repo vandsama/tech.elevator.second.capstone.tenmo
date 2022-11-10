@@ -18,23 +18,13 @@ public class JdbcUserDao implements UserDao {
 
     private JdbcTemplate jdbcTemplate;
 
+    // JdbcUserDao Constructor
     public JdbcUserDao(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override
-    public int findIdByUsername(String username) {
-        String sql = "SELECT user_id FROM tenmo_user WHERE username ILIKE ?;";
-        Integer id = jdbcTemplate.queryForObject(sql, Integer.class, username);
-        if (id != null) {
-            return id;
-        } else {
-            return -1;
-        }
-    }
-
-    @Override
-    public List<User> findAll() {
+    public List<User> viewAllUsers() {
         List<User> users = new ArrayList<>();
         String sql = "SELECT user_id, username, password_hash FROM tenmo_user;";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
@@ -46,19 +36,30 @@ public class JdbcUserDao implements UserDao {
     }
 
     @Override
-    public User findByUsername(String username) throws UsernameNotFoundException {
+    public User viewUserInfoByUsername(String username) throws UsernameNotFoundException {
+        User user = null;
         String sql = "SELECT user_id, username, password_hash FROM tenmo_user WHERE username ILIKE ?;";
-        SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql, username);
-        if (rowSet.next()){
-            return mapRowToUser(rowSet);
-        }
-        throw new UsernameNotFoundException("User " + username + " was not found.");
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, username);
+        if (results.next()){
+            user = mapRowToUser(results);
+            return user;
+        } else {
+        throw new UsernameNotFoundException("User " + username + " was not found.");}
     }
 
     @Override
-    public boolean create(String username, String password) {
+    public int viewUserIdByUsername(String username) {
+        String sql = "SELECT user_id FROM tenmo_user WHERE username ILIKE ?;";
+        Integer id = jdbcTemplate.queryForObject(sql, Integer.class, username);
+        if (id != null) {
+            return id;
+        } else {
+            return -1;
+        }
+    }
 
-        // create user
+    @Override
+    public boolean createUser(String username, String password) {
         String sql = "INSERT INTO tenmo_user (username, password_hash) VALUES (?, ?) RETURNING user_id";
         String password_hash = new BCryptPasswordEncoder().encode(password);
         Integer newUserId;
@@ -67,7 +68,6 @@ public class JdbcUserDao implements UserDao {
         } catch (DataAccessException e) {
             return false;
         }
-
         // TODO: Create the account record with initial balance
         String sql2 = "INSERT INTO account (user_id, balance)" +
                 "VALUES ((SELECT user_id FROM tenmo_user WHERE username = ?), 1000);";

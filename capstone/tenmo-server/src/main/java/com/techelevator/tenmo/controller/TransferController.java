@@ -12,47 +12,52 @@ import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.util.List;
 
-@PreAuthorize("isActivated()")
+@PreAuthorize("isAuthenticated()")
 @RestController
-@RequestMapping("http://localhost:8080/")
+@RequestMapping("/transfers")
 public class TransferController {
 
+    // Instantiate Dao(s)
     private AccountDao accountDao;
     private TransferDao transferDao;
 
-    public TransferController(TransferDao transferDao) {
+    // Place Constructor(s)
+    public TransferController(TransferDao transferDao, AccountDao accountDao) {
         this.transferDao = transferDao;
         this.accountDao = accountDao;
     }
 
-    // GET list of transfers by User ID
-    @PreAuthorize("isActivated()")
-    @RequestMapping(path = "users/{id}/transfers", method = RequestMethod.GET)
-    public List<Transfer> viewAllTransfersByUserId(@PathVariable long id)
-    {
-        return transferDao.viewAllTransfersByUserId(id);
-    }
-
-    // GET list of transfers by Transfer ID
-    @PreAuthorize("isActivated()")
-    @RequestMapping(path = "transfers/{transferId}", method = RequestMethod.GET)
-    public List<Transfer> viewTransferByTransferId(@PathVariable long transferId)
-    {
-        return transferDao.viewTransferByTransferId(transferId);
-    }
-
+    // Execute transfer
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("isActivated()")
-    @RequestMapping(path = "transfers/execute}", method = RequestMethod.POST)
-    public boolean executeTransfer(@Valid @RequestBody Transfer transfer)
-    {
+    @RequestMapping(path = "", method = RequestMethod.POST)
+    public boolean executeTransfer(@Valid @RequestBody Transfer transfer,
+                                   @RequestParam(name="from") String fromUsername,
+                                   @RequestParam(name = "to") String toUsername,
+                                   @RequestParam(name = "amount") BigDecimal transferAmount) {
         BigDecimal fromAccountBalance = accountDao.viewBalanceByUserId(transfer.getFromAccountId());
+
+
         if (fromAccountBalance.compareTo(transfer.getTransferAmount()) == -1)
         {throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "The amount you are transferring cannot exceed your current balance.");}
         else if (transfer.getFromAccountId() == transfer.getToAccountId())
         {throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Your account cannot send money to itself.");}
-        boolean result = transferDao.executeTransfer(transfer.getFromAccountId(), transfer.getToAccountId(), transfer.getTransferAmount());
+        boolean result = transferDao.executeTransfer(fromUsername, toUsername,
+                transferAmount);
         return result;
     }
+    //TODO: Execute Transfer edits: make use of Principal class verify "fromUser" is currently logged in, use either
+    // 3 RequestParams (fromId, toId, amount) or use DTO object
 
+
+    // View all transfers by userId
+    @RequestMapping(path = "", method = RequestMethod.GET)
+    public List<Transfer> viewAllTransfersByUserId(@PathVariable long userId) {
+        return transferDao.viewAllTransfersByUserId(userId);
+    }
+
+    // View single transfer by transferId
+    @RequestMapping(path = "/{transferId}", method = RequestMethod.GET)
+    public Transfer viewTransferByTransferId(@PathVariable long transferId) {
+        return transferDao.viewTransferByTransferId(transferId);
+    }
 }

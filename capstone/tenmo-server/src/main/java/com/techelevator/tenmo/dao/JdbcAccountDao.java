@@ -1,45 +1,53 @@
 package com.techelevator.tenmo.dao;
 
 import com.techelevator.tenmo.model.Account;
-import com.techelevator.tenmo.model.User;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 @Component
 public class JdbcAccountDao implements AccountDao{
 
     private JdbcTemplate jdbcTemplate;
 
+    // JdbcAccountDao Constructor
     public JdbcAccountDao(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-//    @Override
-//    public boolean createNewAccount(String username)
-//    {
-//
-//    }
-
-    public BigDecimal viewAccountInfoByUserId(long id)
+    public Account viewAccountInfoByUserId(long userId)
     {
+        Account account = null;
         String sql = "SELECT account_id, user_id, balance  FROM account" +
                 "JOIN tenmo_user ON tenmo_user.user_id = account.user_id" +
                 "WHERE tenmo_user.user_id = ?;";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, id);
-        return this.mapRowToAccount(results).getBalance();
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
+        if (results.next()) {
+            account = mapRowToAccount(results);
+        }
+        return account;
     }
 
-    public BigDecimal viewBalanceByUserId(long id)
+    @Override
+    public long getAccountIdByUsername(String username) {
+        Account account = null;
+        String sql = "SELECT account_id FROM account" +
+                "JOIN tenmo_user ON tenmo_user.user_id = account.user_id" +
+                "WHERE tenmo_user.username = ?;";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, username);
+        if (results.next()) {
+            account = mapRowToAccount(results);
+        }
+        return account.getAccountId();
+    }
+
+    public BigDecimal viewBalanceByUserId(long userId)
     {
         String sql = "SELECT balance FROM account " +
-//                "JOIN tenmo_user ON tenmo_user.user_id = account.user_id " +
                 "WHERE user_id = ?;";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, id);
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
         return this.mapRowToAccount(results).getBalance();
     }
 

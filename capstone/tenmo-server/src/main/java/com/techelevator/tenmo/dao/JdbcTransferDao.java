@@ -18,88 +18,39 @@ public class JdbcTransferDao implements TransferDao{
 
     public JdbcTransferDao(JdbcTemplate jdbcTemplate) {this.jdbcTemplate = jdbcTemplate;}
 
-    // findAll()
-    // findByTransferId()
-    // create()
-
-//6. As an authenticated user of the system, I need to be able to see transfers I have sent or received.
-//7. As an authenticated user of the system, I need to be able to retrieve the details of any transfer based upon the transfer ID.
-
-//    @Override
-//    private int
-
     @Override
-    public void sendTransfer(Account fromAccount) {
-
-    }
-
-    @Override
-    public List<User> selectFromUserList() {
-        List<User> users = new ArrayList<>();
-        String sql = "SELECT";
-
-        return users;
-    }
-
-    @Override
-    public BigDecimal selectAmount(Account toAccount) {
-        return null;
-    }
-
-    @Override
-    public boolean reviewTransfer(long fromAccountId, long toAccountId, BigDecimal amount) {
-        return false;
-    }
-
-    @Override
-    public boolean executeTransfer(long fromUserId, long toUserId, BigDecimal transferAmount) {
+    public boolean executeTransfer(String fromUsername, String toUsername, BigDecimal transferAmount) {
         Account fromAccount = new Account();
-        if(fromUserId == toUserId || transferAmount.compareTo(BigDecimal.ZERO) <= 0 || transferAmount.compareTo(fromAccount.getBalance(fromUserId)) == -1)
+        if(fromUsername.equalsIgnoreCase(toUsername) || transferAmount.compareTo(BigDecimal.ZERO) <= 0 || transferAmount.compareTo(fromAccount.getBalance(fromUsername)) == -1)
         {return false;}
         else {
             String sql1 = "INSERT INTO transfer (from_account_id, to_account_id, transfer_amount)" +
                     //Insert into the Transfer Table a row writing down the details
-                    "VALUES ((SELECT account_id FROM account JOIN tenmo_user ON tenmo_user.user_id = account.user_id WHERE user_id = ?), (SELECT account_id FROM account JOIN tenmo_user ON tenmo_user.user_id = account.user_id WHERE user_id = ?), ?)" +
+                    "VALUES ((SELECT account_id FROM account JOIN tenmo_user ON tenmo_user.user_id = account.user_id " +
+                    "WHERE username = ?), (SELECT account_id FROM account JOIN tenmo_user ON tenmo_user.user_id = " +
+                    "account.user_id WHERE username = ?), ?)" +
                     "RETURNING transfer_id;";
             Integer newTransactionId;
             try {
-                newTransactionId = jdbcTemplate.queryForObject(sql1, Integer.class, fromUserId, toUserId, transferAmount);
+                newTransactionId = jdbcTemplate.queryForObject(sql1, Integer.class, fromUsername, toUsername, transferAmount);
 
                 String sql2 =  //Update the FromAccount to decrease balance by TransferAmount
                         "UPDATE account" +
                                 "SET account.balance = account.balance - ?" +
-                                "WHERE from_account_id = (SELECT account_id FROM account JOIN tenmo_user ON tenmo_user.user_id = account.user_id WHERE user_id = ?);";
-                jdbcTemplate.update(sql2, transferAmount, fromUserId);
+                                "WHERE from_account_id = (SELECT account_id FROM account JOIN tenmo_user ON " +
+                                "tenmo_user.user_id = account.user_id WHERE username = ?);";
+                jdbcTemplate.update(sql2, transferAmount, fromUsername);
 
                 String sql3 = "UPDATE account" +  //Update the ToAccount to increase balance by TransferAmount
                         "SET account.balance = account.balance + ?" +
-                        "WHERE to_account_id = (SELECT account_id FROM account JOIN tenmo_user ON tenmo_user.user_id = account.user_id WHERE user_id = ?);";
-                jdbcTemplate.update(sql3, transferAmount, toUserId);
-
+                        "WHERE to_account_id = (SELECT account_id FROM account JOIN tenmo_user ON tenmo_user.user_id " +
+                        "= account.user_id WHERE username = ?);";
+                jdbcTemplate.update(sql3, transferAmount, toUsername);
                 return true;
             } catch (DataAccessException e) {
                 return false;
             }
-
-
         }
-    }
-
-
-
-    @Override
-    public List<Transfer> viewTransferByTransferId(long transferId) {
-        List<Transfer> transfers = new ArrayList<>();
-        String sql = "SELECT transfer_id, from_account_id, to_account_id, transfer_amount" +
-                "FROM transfer" +
-                "WHERE transfer_id = ?;";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, transferId);
-        while(results.next())
-        {
-            Transfer t = mapRowToTransfer(results);
-            transfers.add(t);
-        }
-        return transfers;
     }
 
     @Override
@@ -111,14 +62,28 @@ public class JdbcTransferDao implements TransferDao{
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId, userId);
         while(results.next())
         {
-           Transfer t = mapRowToTransfer(results);
+            Transfer t = mapRowToTransfer(results);
             transfers.add(t);
         }
 
         return transfers;
     }
 
+    @Override
+    public Transfer viewTransferByTransferId(long transferId) {
+        Transfer transfer = null;
+        String sql = "SELECT transfer_id, from_account_id, to_account_id, transfer_amount" +
+                "FROM transfer" +
+                "WHERE transfer_id = ?;";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, transferId);
+        if(results.next())
+        {
+            transfer = mapRowToTransfer(results);
+        }
+        return transfer;
+    }
 
+    // This is the mapper to create a transfer object and set its attributes to the name of the column in the database.
     private Transfer mapRowToTransfer(SqlRowSet rs) {
         Transfer transfer = new Transfer();
         transfer.setTransferId(rs.getLong("transfer_id"));
@@ -127,17 +92,4 @@ public class JdbcTransferDao implements TransferDao{
         transfer.setTransferAmount(rs.getBigDecimal("transfer_amount"));
         return transfer;
     }
-
 }
-
-//    BEGIN TRANSACTION
-//    UPDATE account
-//    SET account.balance = (account.balance - ?)
-//        WHERE from_account_id = ?;
-//        UPDATE account
-//        SET account.balance = (account.balance + ?)
-//        WHERE to_account_id = ?;
-//        INSERT INTO transfer (from_account_id, to_account_id, transfer_amount)
-//        VALUES (?, ?, ?)
-//        RETURNING transfer_id;
-// COMMIT;

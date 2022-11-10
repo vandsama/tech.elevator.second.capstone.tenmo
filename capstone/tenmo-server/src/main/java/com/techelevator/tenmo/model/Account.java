@@ -47,7 +47,7 @@ public class Account {
     public BigDecimal getBalance() {
         return balance;
     }
-    public BigDecimal getBalance(long accountId) {
+    public BigDecimal getBalance(String username) {
         return balance;
     }
 
