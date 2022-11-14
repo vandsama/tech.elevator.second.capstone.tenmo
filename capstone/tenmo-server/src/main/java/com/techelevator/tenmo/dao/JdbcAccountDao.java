@@ -20,8 +20,8 @@ public class JdbcAccountDao implements AccountDao{
     public Account viewAccountInfoByUserId(long userId)
     {
         Account account = null;
-        String sql = "SELECT account_id, user_id, balance  FROM account" +
-                "JOIN tenmo_user ON tenmo_user.user_id = account.user_id" +
+        String sql = "SELECT account_id, user_id, balance  FROM account " +
+                "JOIN tenmo_user ON tenmo_user.user_id = account.user_id " +
                 "WHERE tenmo_user.user_id = ?;";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
         if (results.next()) {
@@ -33,22 +33,23 @@ public class JdbcAccountDao implements AccountDao{
     @Override
     public long getAccountIdByUsername(String username) {
         Account account = null;
-        String sql = "SELECT account_id FROM account" +
-                "JOIN tenmo_user ON tenmo_user.user_id = account.user_id" +
+        String sql = "SELECT account_id FROM account " +
+                "JOIN tenmo_user ON tenmo_user.user_id = account.user_id " +
                 "WHERE tenmo_user.username = ?;";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, username);
-        if (results.next()) {
-            account = mapRowToAccount(results);
-        }
-        return account.getAccountId();
+        Long accountId = jdbcTemplate.queryForObject(sql, Long.class, username);
+       return accountId;
     }
 
     public BigDecimal viewBalanceByUserId(long userId)
     {
+        Account account = new Account();
         String sql = "SELECT balance FROM account " +
                 "WHERE user_id = ?;";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
-        return this.mapRowToAccount(results).getBalance();
+        if (results.next()) {
+            account.setBalance(results.getBigDecimal("balance"));
+        }
+        return account.getBalance();
     }
 
     public Account mapRowToAccount(SqlRowSet rs) {

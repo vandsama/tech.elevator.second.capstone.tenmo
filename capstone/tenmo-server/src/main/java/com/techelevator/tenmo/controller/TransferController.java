@@ -30,17 +30,20 @@ public class TransferController {
     // Execute transfer
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(path = "", method = RequestMethod.POST)
-    public boolean executeTransfer(@Valid @RequestBody Transfer transfer,
-                                   @RequestParam(name="from") String fromUsername,
+    public boolean executeTransfer(@RequestParam(name="from") String fromUsername,
                                    @RequestParam(name = "to") String toUsername,
                                    @RequestParam(name = "amount") BigDecimal transferAmount) {
+        Transfer transfer = new Transfer();
+        transfer.setFromAccountId(accountDao.getAccountIdByUsername(fromUsername));
+        transfer.setToAccountId(accountDao.getAccountIdByUsername(toUsername));
+        transfer.setTransferAmount(transferAmount);
         BigDecimal fromAccountBalance = accountDao.viewBalanceByUserId(transfer.getFromAccountId());
 
 
-        if (fromAccountBalance.compareTo(transfer.getTransferAmount()) == -1)
-        {throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "The amount you are transferring cannot exceed your current balance.");}
-        else if (transfer.getFromAccountId() == transfer.getToAccountId())
-        {throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Your account cannot send money to itself.");}
+//        if (fromAccountBalance.compareTo(transferAmount) == -1)
+//        {throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "The amount you are transferring cannot exceed your current balance.");}
+//        else if (transfer.getFromAccountId() == transfer.getToAccountId())
+//        {throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Your account cannot send money to itself.");}
         boolean result = transferDao.executeTransfer(fromUsername, toUsername,
                 transferAmount);
         return result;
