@@ -2,6 +2,8 @@ package com.techelevator.tenmo.controller;
 
 import com.techelevator.tenmo.dao.AccountDao;
 import com.techelevator.tenmo.dao.TransferDao;
+import com.techelevator.tenmo.dao.UserDao;
+import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.Transfer;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,11 +22,12 @@ public class TransferController {
     // Instantiate Dao(s)
     private AccountDao accountDao;
     private TransferDao transferDao;
-
+    private UserDao userDao;
     // Place Constructor(s)
-    public TransferController(TransferDao transferDao, AccountDao accountDao) {
+    public TransferController(TransferDao transferDao, AccountDao accountDao, UserDao userDao) {
         this.transferDao = transferDao;
         this.accountDao = accountDao;
+        this.userDao = userDao;
     }
 
     // Execute transfer
@@ -37,13 +40,17 @@ public class TransferController {
         transfer.setFromAccountId(accountDao.getAccountIdByUsername(fromUsername));
         transfer.setToAccountId(accountDao.getAccountIdByUsername(toUsername));
         transfer.setTransferAmount(transferAmount);
-        BigDecimal fromAccountBalance = accountDao.viewBalanceByUserId(transfer.getFromAccountId());
+       // BigDecimal fromAccountBalance = accountDao.viewBalanceByUserId(transfer.getFromAccountId());
 
+        Account fromAccount = new Account();
+        Account toAccount = new Account();
+        fromAccount.setBalance(accountDao.viewBalanceByUserId(userDao.viewUserIdByUsername(fromUsername)));
+        toAccount.setBalance(accountDao.viewBalanceByUserId(userDao.viewUserIdByUsername(toUsername)));
 
-//        if (fromAccountBalance.compareTo(transferAmount) == -1)
-//        {throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "The amount you are transferring cannot exceed your current balance.");}
-//        else if (transfer.getFromAccountId() == transfer.getToAccountId())
-//        {throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Your account cannot send money to itself.");}
+        if (fromAccount.getBalance().compareTo(transferAmount) == -1)
+        {throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "The amount you are transferring cannot exceed your current balance.");}
+        else if (transfer.getFromAccountId() == transfer.getToAccountId())
+        {throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Your account cannot send money to itself.");}
         boolean result = transferDao.executeTransfer(fromUsername, toUsername,
                 transferAmount);
         return result;
@@ -54,8 +61,8 @@ public class TransferController {
 
     // View all transfers by userId
     @RequestMapping(path = "", method = RequestMethod.GET)
-    public List<Transfer> viewAllTransfersByUserId(@PathVariable long userId) {
-        return transferDao.viewAllTransfersByUserId(userId);
+    public List<Transfer> viewAllTransfersByUsername(@RequestParam(name="username") String username) {
+        return transferDao.viewAllTransfersByUsername(username);
     }
 
     // View single transfer by transferId

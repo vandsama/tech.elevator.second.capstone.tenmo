@@ -34,14 +34,14 @@ public class JdbcTransferDao implements TransferDao{
                this.jdbcTemplate.update(sql1, fromUsername, toUsername, transferAmount);
                 String sql2 =  //Update the FromAccount to decrease balance by TransferAmount
                         "UPDATE account " +
-                                "SET account.balance = account.balance - ? " +
-                                "WHERE from_account_id = (SELECT account_id FROM account JOIN tenmo_user ON " +
+                                "SET balance = balance - ? " +
+                                "WHERE account_id = (SELECT account_id FROM account JOIN tenmo_user ON " +
                                 "tenmo_user.user_id = account.user_id WHERE username = ?);";
                 jdbcTemplate.update(sql2, transferAmount, fromUsername);
 
                 String sql3 = "UPDATE account " +  //Update the ToAccount to increase balance by TransferAmount
-                        "SET account.balance = account.balance + ?" +
-                        " WHERE to_account_id = (SELECT account_id FROM account JOIN tenmo_user ON tenmo_user.user_id " +
+                        "SET balance = balance + ?" +
+                        " WHERE account_id = (SELECT account_id FROM account JOIN tenmo_user ON tenmo_user.user_id " +
                         "= account.user_id WHERE username = ?);";
                 jdbcTemplate.update(sql3, transferAmount, toUsername);
                 return true;
@@ -53,12 +53,12 @@ public class JdbcTransferDao implements TransferDao{
 //    }
 
     @Override
-    public List<Transfer> viewAllTransfersByUserId(long userId) {
+    public List<Transfer> viewAllTransfersByUsername(String username) {
         List<Transfer> transfers = new ArrayList<>();
         String sql = "SELECT transfer_id, from_account_id, to_account_id, transfer_amount " +
                 "FROM transfer " +
-                "WHERE from_account_id = (SELECT account_id FROM account JOIN tenmo_user ON tenmo_user.user_id = account.user_id WHERE user_id = ?) OR to_account_id = (SELECT account_id FROM account JOIN tenmo_user ON tenmo_user.user_id = account.user_id WHERE user_id = ?);";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId, userId);
+                "WHERE from_account_id = (SELECT account_id FROM account JOIN tenmo_user ON tenmo_user.user_id = account.user_id WHERE username = ?) OR to_account_id = (SELECT account_id FROM account JOIN tenmo_user ON tenmo_user.user_id = account.user_id WHERE username = ?);";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, username, username);
         while(results.next())
         {
             Transfer t = mapRowToTransfer(results);
